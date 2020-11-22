@@ -5,8 +5,6 @@
 // Peyton Early
 // Nathan Shaver
 
-// Should read chapter 8 to figure out what the fuck is going on
-
 using namespace std;
 
 #include <stdio.h>
@@ -48,6 +46,27 @@ void waitfg(pid_t pid);
 void sigchld_handler(int sig);
 void sigtstp_handler(int sig);
 void sigint_handler(int sig);
+
+//
+// Provided functions
+//
+// void clearjob(struct job_t *job) - clear entries in a job struct
+// void initjobs(struct job_t *jobs) - initialize the job listt
+// int maxjid(struct job_t *jobs) - returns largest allocated job ID
+// int addjob(struct job_t *jobs, pid_t pid, int state, char *cmdline) - add a job to the job list
+// int deletejob(struct job_t *jobs, pid_t pid) - delete a job whose PID=pid from the job list
+// pid_t fgpid(struct job_t *jobs) - return PID of current forground job, 0 if no such job
+// struct job_t *getjobpid(struct job_t *jobs, pid_t pid) - find a job (by PID) on the job list
+// struct job_t *getjobjid(struct job_t *jobs, int jid) - find a job (by JID) on the job list
+// int pid2jid(pid_t pid) - map process ID to job ID
+// void listjobs(struct job_t *jobs) - print the job list
+// void usage(void) - print a help message
+// void unix_error(const char *msg) - unix-style error routine
+// void app_error(const char *msg) - application-style error routine
+// handler_t *Signal(int signum, handler_t *handler) - wrapper for sigaction function
+// void sigquit_handler(int sig) - Gracefully terminate child shell
+// int parseline(const char *cmdline, char **argv) - Parse command line and build argv array
+
 
 //
 // main - The shell's main routine 
@@ -168,7 +187,6 @@ void eval(char *cmdline)
   if (argv[0] == NULL) { // If passed an empty line
     return;   /* ignore empty lines */
   }
-  
 
   if (!builtin_cmd(argv)) {
     return;
@@ -190,10 +208,20 @@ int builtin_cmd(char **argv)
   string cmd(argv[0]);
 
   if (cmd == "quit") {
-    sigquit_handler(0);
+     exit(0); // Exit shell
   }
-
-  return 0;     /* not a builtin command */
+  else if (cmd == "fg" || cmd == "bg") {
+    // do_bgfg
+    do_bgfg(argv); // Restart job in bg or fg
+    return 1;
+    // waitfg
+  }
+  else if (cmd == "jobs") {
+    listjobs(jobs); // List running and stopped background jobs
+  }
+  else {
+    return 0; // Not a built in command
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -239,7 +267,18 @@ void do_bgfg(char **argv)
   // so we've converted argv[0] to a string (cmd) for
   // your benefit.
   //
-  string cmd(argv[0]);
+  string cmd(argv[0]); // Convert char to string
+
+  if (cmd == "bg") {
+    jobp->state = BG; // Set job state to BG
+    kill(jobp->pid, SIGCONT); // Have job pause and continue running in background
+    printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline);
+  }
+  else if (cmd == "fg") {
+    jobp->state = FG; // Set job state to FG
+    kill(jobp->pid, SIGCONT); // Have job pause and continue running in foreground
+    waitfg(jobp->pid); // Need to wait for fg job to finish because only 1 fg job can run at a time
+  }
 
   return;
 }
@@ -250,6 +289,9 @@ void do_bgfg(char **argv)
 //
 void waitfg(pid_t pid)
 {
+  while (pid == fgpid(jobs)) { // While job pid is still the foreground pid, then wait
+    sleep(.1);
+  }
   return;
 }
 
