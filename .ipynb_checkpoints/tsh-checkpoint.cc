@@ -218,7 +218,6 @@ int builtin_cmd(char **argv)
   }
   else if (cmd == "jobs") {
     listjobs(jobs); // List running and stopped background jobs
-    return 1;
   }
   else {
     return 0; // Not a built in command
@@ -272,22 +271,12 @@ void do_bgfg(char **argv)
 
   if (cmd == "bg") {
     jobp->state = BG; // Set job state to BG
-    if (getjobpid(jobs, jobp->pid)) { // Search if job already exists
-      kill(-jobp->pid, SIGCONT); // Have job pause and continue running in background
-      printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline);
-    }
-    else {
-      addjob(jobs, jobp->pid, jobp->state, jobp->cmdline);
-    }
+    kill(jobp->pid, SIGCONT); // Have job pause and continue running in background
+    printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline);
   }
   else if (cmd == "fg") {
     jobp->state = FG; // Set job state to FG
-    if (getjobpid(jobs, jobp->pid)) {
-      kill(-jobp->pid, SIGCONT); // Have job pause and continue running in foreground
-    }
-    else {
-      addjob(jobs, jobp->pid, jobp->state, jobp->cmdline);
-    }
+    kill(jobp->pid, SIGCONT); // Have job pause and continue running in foreground
     waitfg(jobp->pid); // Need to wait for fg job to finish because only 1 fg job can run at a time
   }
 
@@ -301,7 +290,7 @@ void do_bgfg(char **argv)
 void waitfg(pid_t pid)
 {
   while (pid == fgpid(jobs)) { // While job pid is still the foreground pid, then wait
-    sleep(1);
+    sleep(.1);
   }
   return;
 }
