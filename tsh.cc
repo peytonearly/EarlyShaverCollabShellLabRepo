@@ -168,11 +168,10 @@ void eval(char *cmdline)
   if (argv[0] == NULL) { // If passed an empty line
     return;   /* ignore empty lines */
   }
-  else if (*argv[0] == "quit" || *argv[0] == "jobs" || *argv[0] == "bg" || *argv[0] == "fg") { // If passed quit/jobs/bg/fg then execute function
-    builtin_cmd(argv);
-  }
-  else { // Fork child process
-    // temp
+  
+
+  if (!builtin_cmd(argv)) {
+    return;
   }
 
   return;
@@ -188,11 +187,11 @@ void eval(char *cmdline)
 
 int builtin_cmd(char **argv) 
 {
-  string cmd(argv[0]);
+  string input(argv[0]);
 
-  // if (cmd == 'quit') {
-  //   exit(0);
-  // }
+  if (input == "quit") {
+    sigquit_handler(0);
+  }
 
   return 0;     /* not a builtin command */
 }
