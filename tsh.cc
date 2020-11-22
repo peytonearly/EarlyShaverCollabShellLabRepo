@@ -187,9 +187,9 @@ void eval(char *cmdline)
 
 int builtin_cmd(char **argv) 
 {
-  string input(argv[0]);
+  string cmd(argv[0]);
 
-  if (input == "quit") {
+  if (cmd == "quit") {
     sigquit_handler(0);
   }
 
