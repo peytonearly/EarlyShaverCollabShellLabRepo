@@ -182,7 +182,7 @@ void eval(char *cmdline)
     }
     else{
       job = getjobpid(jobs, pid);
-      printf("[%d] (%d) %s\n", job->jid, job->pid, cmdline);
+      printf("[%d] (%d) %s", job->jid, job->pid, cmdline);
     }
   }
 
