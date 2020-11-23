@@ -204,13 +204,11 @@ int builtin_cmd(char **argv)
     exit(0);
   }
   else if (cmd == "fg" || cmd == "bg") {
-    // do_bgfg
     do_bgfg(argv);
     return 1;
-    // waitfg
   }
   else if (cmd == "jobs") {
-    // Do something
+    listjobs(jobs);
   }
   return 0; // Not a built in command
 }
