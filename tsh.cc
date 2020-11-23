@@ -148,9 +148,9 @@ int main(int argc, char *argv[])
     //
     // Evaluate command line
     //
-    printf("main1");
+printf("main1");
     eval(cmdline);
-    printf("main2");
+printf("main2");
     fflush(stdout);
     fflush(stdout);
   } 
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 //
 void eval(char *cmdline) 
 {
-  printf("eval1");
+printf("eval1");
   /* Parse command line */
   //
   // The 'argv' vector is filled in by the parseline
@@ -195,42 +195,42 @@ printf("eval2");
   }
 printf("eval3");
   if (!builtin_cmd(argv)) {
-    printf("1");
+printf("1");
     sigprocmask(SIG_BLOCK, &mask, NULL); // Block before fork to prevent premature reapage
-    printf("2");
+printf("2");
     pig = fork();
-    printf("3");
+printf("3");
     setpgid(0, 0); // Set base process group
-    printf("4");
+printf("4");
 
     if(pig == 0){ // If inside child
-    printf("child1");
+printf("child1");
         execv(argv[0], argv); // Runs commands given in command line input
-    printf("child2");
-        printf("%s: Command not found\n", argv[0]);
+printf("child2");
+printf("%s: Command not found\n", argv[0]);
         exit(0); // Only returns if unrecognized command
     }
     else{ // If inside parent
-    printf("parent1");
+printf("parent1");
         if(!bg){ // If foreground process
-        printf("parentfg1");
+printf("parentfg1");
           addjob(jobs, pig, FG, cmdline); // Add job to jobs struct with foreground state
-          printf("parentfg2");
+printf("parentfg2");
           waitfg(pig); // Wait until foreground process is complete because only one foreground process can run at a time
         }
         else{
-        printf("parentbg1");  
+printf("parentbg1");  
           addjob(jobs, pig, BG, cmdline); // Add joh to jobs struct with background state
-          printf("parentbg2");
+printf("parentbg2");
           currBGJob = getjobpid(jobs, pig); // Find newly added background job
-          printf("parentbg3");
-          printf("[%d] (%d) %s", currBGJob->jid, pig, cmdline); // Print out information about newly added background job
+printf("parentbg3");
+printf("[%d] (%d) %s", currBGJob->jid, pig, cmdline); // Print out information about newly added background job
         }
     }
     sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
   }
 
-  printf("end");
+printf("end");
   return;
 }
 
@@ -340,7 +340,8 @@ void do_bgfg(char **argv)
 void waitfg(pid_t pid)
 {
   while (pid == fgpid(jobs)) { // While job pid is still the foreground pid, then wait
-    sleep(1);
+    // sleep(.1);
+    printf("consume pp\n");
   }
   return;
 }
