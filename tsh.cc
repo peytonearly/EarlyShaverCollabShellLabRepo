@@ -170,18 +170,19 @@ void eval(char *cmdline)
   }
   
 
-  struct job_t *job1;
+  struct job_t *job;
   if (!builtin_cmd(argv)) {
-    if((pid = fork()) == 0){
-      execvp(argv[0], argv);
+    if((pid = fork()) == 0){ // If in child
+      execvp(argv[0], argv); // Execute child
       exit(0);
     }
-    addjob(jobs, pid, bg ? BG : FG, cmdline);
+    addjob(jobs, pid, bg ? BG : FG, cmdline); // If bg true, set BG, else set FG
     if(!bg){
-      waitfg(pid);
+      waitfg(pid); // Wait for fg function to end
     }
     else{
-      job1 = getjobpid(jobs, pid);
+      job = getjobpid(jobs, pid);
+      printf("[%d] (%d) %s\n", job->jid, job->pid, cmdline);
     }
   }
 
@@ -276,8 +277,8 @@ void do_bgfg(char **argv)
 //
 void waitfg(pid_t pid)
 {
-  struct job_t *job1 = getjobpid(jobs, pid);
-  while(job1 -> state == FG){
+  struct job_t *job = getjobpid(jobs, pid);
+  while(job -> state == FG){
     sleep(1);
   }
   return;
@@ -301,8 +302,9 @@ void sigchld_handler(int sig)
 {
   pid_t pid;
   int status;
-  //struct job_t *job1;
+  // struct job_t *job;
   while((pid = waitpid(-1, &status, WNOHANG)) > 0){
+    // job = getjobpid(jobs, pid);
     deletejob(jobs, pid);
   }
   return;
