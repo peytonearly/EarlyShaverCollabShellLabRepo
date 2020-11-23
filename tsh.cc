@@ -169,21 +169,27 @@ void eval(char *cmdline)
     return;   /* ignore empty lines */
   }
   
-
+  // sigset_t mask;
   struct job_t *job;
   if (!builtin_cmd(argv)) {
+    // sigprocmask(SIG_BLOCK, &mask, NULL);
+
     if((pid = fork()) == 0){ // If in child
       execvp(argv[0], argv); // Execute child
-      exit(0);
+      exit(0); // Exit if error occurs within child execution
     }
-    addjob(jobs, pid, bg ? BG : FG, cmdline); // If bg true, set BG, else set FG
+
     if(!bg){
+      addjob(jobs, pid, FG, cmdline); // Add job with state set to FG
       waitfg(pid); // Wait for fg function to end
     }
     else{
-      job = getjobpid(jobs, pid);
-      printf("[%d] (%d) %s", job->jid, job->pid, cmdline);
+      addjob(jobs, pid, BG, cmdline); // Add job with state set to BG
+      job = getjobpid(jobs, pid); // Find struct of recently added background job
+      printf("[%d] (%d) %s", job->jid, job->pid, cmdline); // Print message
     }
+
+    // sigprocmask(SIG_UNBLOCK, &mask, NULL);
   }
 
   return;
@@ -209,6 +215,7 @@ int builtin_cmd(char **argv)
   }
   else if (cmd == "jobs") {
     listjobs(jobs);
+    return 1;
   }
   return 0; // Not a built in command
 }

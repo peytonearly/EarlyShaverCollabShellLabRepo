@@ -141,19 +141,19 @@ void listjobs(struct job_t *jobs)
 	if (jobs[i].pid != 0) {
 	    printf("[%d] (%d) ", jobs[i].jid, jobs[i].pid);
 	    switch (jobs[i].state) {
-		case BG: 
-		    printf("Running ");
-		    break;
-		case FG: 
-		    printf("Foreground ");
-		    break;
-		case ST: 
-		    printf("Stopped ");
-		    break;
-	    default:
-		    printf("listjobs: Internal error: job[%d].state=%d ", 
-			   i, jobs[i].state);
-	    }
+			case BG: 
+				printf("Running ");
+				break;
+			case FG: 
+				printf("Foreground ");
+				break;
+			case ST: 
+				printf("Stopped ");
+				break;
+			default:
+				printf("listjobs: Internal error: job[%d].state=%d ", 
+				i, jobs[i].state);
+			}
 	    printf("%s", jobs[i].cmdline);
 	}
     }
