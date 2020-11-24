@@ -308,9 +308,21 @@ void sigchld_handler(int sig)
   pid_t pid;
   int status;
   // struct job_t *job;
-  while((pid = waitpid(-1, &status, WNOHANG)) > 0){
+  while((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0){
+    // link to info about waitpid function
+    // https://www.ibm.com/support/knowledgecenter/SSLTBW_2.1.0/com.ibm.zos.v2r1.bpxbd00/rtwaip.htm
+
     // job = getjobpid(jobs, pid);
     deletejob(jobs, pid);
+
+    // if (WIFSTOPPED(status)) { // Will return true if child process is currently stopped
+    //   struct job_t *job = getjobpid(jobs, pid); // Get process struct information to be used in print statement
+    //   job->state = ST; // Set job state to stopped
+    //   printf("Job [%d] (%d) stopped by signal 20", job->jid, pid);
+    // }
+    // else if (WISIGNALED(status)) {
+
+    // }
   }
   return;
 }
