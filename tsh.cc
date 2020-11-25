@@ -170,28 +170,30 @@ void eval(char *cmdline)
   }
   
   sigset_t mask;
+  sigemptyset(&mask); // Initialize empty signal set
+  sigaddset(&mask, SIGCHLD); // Add SIGCHLD signal to signal set
   struct job_t *job;
   
   if (!builtin_cmd(argv)) {
-    sigprocmask(SIG_BLOCK, &mask, NULL);
+    sigprocmask(SIG_BLOCK, &mask, NULL); // Block SIGCHLD signals
 
     if((pid = fork()) == 0){ // If in child
-      sigprocmask(SIG_UNBLOCK, &mask, NULL);
+      sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
       execvp(argv[0], argv); // Execute child
       exit(0); // Exit if error occurs within child execution
     }
+
+    addjob(jobs, pid, bg ? BG : FG, cmdline); // Parent adds job to jobs list
+
+    sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
     
-    if(!bg){
-      addjob(jobs, pid, FG, cmdline); // Add job with state set to FG
+    if(!bg) {
       waitfg(pid); // Wait for fg function to end
     }
-    else{
-      addjob(jobs, pid, BG, cmdline); // Add job with state set to BG
+    else{ 
       job = getjobpid(jobs, pid); // Find struct of recently added background job
       printf("[%d] (%d) %s", job->jid, job->pid, cmdline); // Print message
     }
-
-    sigprocmask(SIG_UNBLOCK, &mask, NULL);
   }
 
   return;
@@ -286,7 +288,7 @@ void waitfg(pid_t pid)
 {
   struct job_t *job = getjobpid(jobs, pid);
   while(job -> state == FG){
-    sleep(1);
+    sleep(.1);
   }
   return;
 }
@@ -332,7 +334,7 @@ void sigchld_handler(int sig)
 /////////////////////////////////////////////////////////////////////////////
 //
 // sigint_handler - The kernel sends a SIGINT to the shell whenver the
-//    user types ctrl-c at the keyboard.  Catch it and send it along
+//    user types ctrl-c at the keyboard. Catch it and send it along
 //    to the foreground job.  
 //
 void sigint_handler(int sig) 
@@ -340,7 +342,6 @@ void sigint_handler(int sig)
   pid_t pid = fgpid(jobs); // Collect pid of foreground job
   if (pid > 0) { // fgpid() returns 0 if no fg job, otherwise returns not 0
     kill(-pid, sig); // Kill group associated with pid
-    exit(1);
   }
   return;
 }
