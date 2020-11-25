@@ -178,6 +178,7 @@ void eval(char *cmdline)
     sigprocmask(SIG_BLOCK, &mask, NULL); // Block SIGCHLD signals
 
     if((pid = fork()) == 0){ // If in child
+      setpgid(0, 0);
       sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
       execvp(argv[0], argv); // Execute child
       exit(0); // Exit if error occurs within child execution
@@ -341,7 +342,7 @@ void sigint_handler(int sig)
 {
   pid_t pid = fgpid(jobs); // Collect pid of foreground job
   if (pid > 0) { // fgpid() returns 0 if no fg job, otherwise returns not 0
-    kill(-pid, sig); // Kill group associated with pid
+    kill(-pid, SIGINT); // Terminate group associated with pid
   }
   return;
 }
@@ -354,7 +355,10 @@ void sigint_handler(int sig)
 //
 void sigtstp_handler(int sig) 
 {
-
+  pid_t pid = fgpid(jobs); // Collect pid of foreground job
+  if (pid > 0) {
+    kill(-pid, SIGTSTP); // Stop group associated with pid
+  }
   return;
 }
 
