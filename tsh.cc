@@ -169,16 +169,18 @@ void eval(char *cmdline)
     return;   /* ignore empty lines */
   }
   
-  // sigset_t mask;
+  sigset_t mask;
   struct job_t *job;
+  
   if (!builtin_cmd(argv)) {
-    // sigprocmask(SIG_BLOCK, &mask, NULL);
+    sigprocmask(SIG_BLOCK, &mask, NULL);
 
     if((pid = fork()) == 0){ // If in child
+      sigprocmask(SIG_UNBLOCK, &mask, NULL);
       execvp(argv[0], argv); // Execute child
       exit(0); // Exit if error occurs within child execution
     }
-
+    
     if(!bg){
       addjob(jobs, pid, FG, cmdline); // Add job with state set to FG
       waitfg(pid); // Wait for fg function to end
@@ -189,7 +191,7 @@ void eval(char *cmdline)
       printf("[%d] (%d) %s", job->jid, job->pid, cmdline); // Print message
     }
 
-    // sigprocmask(SIG_UNBLOCK, &mask, NULL);
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
   }
 
   return;
@@ -307,22 +309,22 @@ void sigchld_handler(int sig)
 {
   pid_t pid;
   int status;
-  // struct job_t *job;
+
   while((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0){
-    // link to info about waitpid function
-    // https://www.ibm.com/support/knowledgecenter/SSLTBW_2.1.0/com.ibm.zos.v2r1.bpxbd00/rtwaip.htm
+    struct job_t *job = getjobpid(jobs, pid);
+    
+    if (WIFSTOPPED(status)) { // Will return true if child process is currently stopped
+      job->state = ST; // Set job state to stopped
+      printf("Job [%d] (%d) stopped by signal %d\n", job->jid, pid, WSTOPSIG(status));
+    }
+    else if (WIFSIGNALED(status)) {
+      printf("Job [%d] (%d) terminated by signal %d\n", job->jid, pid, WTERMSIG(status));
+      deletejob(jobs, pid);
+    }
+    else if (WIFEXITED(status)) {
+      deletejob(jobs, pid);
+    }
 
-    // job = getjobpid(jobs, pid);
-    deletejob(jobs, pid);
-
-    // if (WIFSTOPPED(status)) { // Will return true if child process is currently stopped
-    //   struct job_t *job = getjobpid(jobs, pid); // Get process struct information to be used in print statement
-    //   job->state = ST; // Set job state to stopped
-    //   printf("Job [%d] (%d) stopped by signal 20", job->jid, pid);
-    // }
-    // else if (WISIGNALED(status)) {
-
-    // }
   }
   return;
 }
@@ -335,6 +337,11 @@ void sigchld_handler(int sig)
 //
 void sigint_handler(int sig) 
 {
+  pid_t pid = fgpid(jobs); // Collect pid of foreground job
+  if (pid > 0) { // fgpid() returns 0 if no fg job, otherwise returns not 0
+    kill(-pid, sig); // Kill group associated with pid
+    exit(1);
+  }
   return;
 }
 
@@ -346,6 +353,7 @@ void sigint_handler(int sig)
 //
 void sigtstp_handler(int sig) 
 {
+
   return;
 }
 

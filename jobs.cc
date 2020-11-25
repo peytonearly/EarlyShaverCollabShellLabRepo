@@ -24,7 +24,7 @@ void initjobs(struct job_t *jobs) {
     int i;
 
     for (i = 0; i < MAXJOBS; i++)
-	clearjob(&jobs[i]);
+		clearjob(&jobs[i]);
 }
 
 /* maxjid - Returns largest allocated job ID */
@@ -33,8 +33,8 @@ int maxjid(struct job_t *jobs)
     int i, max=0;
 
     for (i = 0; i < MAXJOBS; i++)
-	if (jobs[i].jid > max)
-	    max = jobs[i].jid;
+		if (jobs[i].jid > max)
+	    	max = jobs[i].jid;
     return max;
 }
 
@@ -71,7 +71,7 @@ int deletejob(struct job_t *jobs, pid_t pid)
     int i;
 
     if (pid < 1)
-	return 0;
+		return 0;
 
     for (i = 0; i < MAXJOBS; i++) {
 	if (jobs[i].pid == pid) {
