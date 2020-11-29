@@ -178,7 +178,7 @@ void eval(char *cmdline)
     sigprocmask(SIG_BLOCK, &mask, NULL); // Block SIGCHLD signals
 
     if((pid = fork()) == 0){ // If in child
-      setpgid(0, 0);
+      setpgid(0, 0); // Set process group ID 
       sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
       execvp(argv[0], argv); // Execute child
       exit(0); // Exit if error occurs within child execution
@@ -272,6 +272,7 @@ void do_bgfg(char **argv)
   if (cmd == "bg") {
     jobp->state = BG; // Set job state to BG
     kill(-jobp->pid, SIGCONT); // Have job pause and continue running in background
+    printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline); // Print message
   }
   else if (cmd == "fg") {
     jobp->state = FG; // Set job state to FG
