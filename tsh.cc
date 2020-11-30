@@ -28,37 +28,36 @@ using namespace std;
 static char prompt[] = "tsh> ";
 int verbose = 0;
 
-/*
-      .~~~~`\~~\
-     ;       ~~ \
-     |           ;
- ,--------,______|---.
-/          \-----`    \    
-`.__________`-_______-'
-        ('o_o')  __Howdy
-        _\~-~/_    ______.
-       //\__/\ \ ~(_]---'
-      / )O  O( .\/_)
-      \ \    / \_/
-      )/_|  |_\
-     // /(\/)\ \
-     /_/      \_\
-    (_||      ||_)
-      \| |__| |/
-       | |  | |
-       | |  | |
-       |_|  |_|
-       /_\  /_\
+/*                                             
+  _  _     ___  __      __ ___   __   __ 
+ | || |   / _ \ \ \    / /|   \  \ \ / / 
+ | __ |  | (_) | \ \/\/ / | |) |  \ V /  
+ |_||_|   \___/   \_/\_/  |___/   _|_|_  
+_|"""""|_|"""""|_|"""""|_|"""""|_| """ | 
+"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'               
+                                                               |\.../|            __
+                                                               |     |            ||'."-._.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.(
+                                                           \.__;     ;__./        ||  \ You need to implement the functions eval, builtin_cmd, do_bgfg,     )
+                                       |\    /|             \___________/         ||   | waitfg, sigchld_handler, sigstp_handler, sigint_handler           /
+                                    ___| \,,/_/              \\ U   U //          ||   | The code below provides the "prototypes" for those functions     (
+                                 ---__/ \/    \               \///w\\\/ howdy     ||  /  so that earlier code can refer to them. You need to fill in the   )
+                                __--/     U U \  nyehh         //   \\            |||.'  function bodies below.                                           /
+                                _ -/    (_     \       .--.___/|:===:|\___.--.    |||.-"-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-.__.-""-/
+                               // /       \_ / ==\      |  |   \ %% /   |  ;      ||
+   __-------------_____--___--/           / \_ U U)     |  ||~| | %| |~||  | /---\||
+    /                                     /   \ W\\     |  ;|_| |  | |_|:  |/ ._;`||
+   /                                     /        \\    \  ;____|  |____:   ./    ||
+  ||              )                   \_/\         \\    \.. ||||[]||||__\./     [||
+  ||             /              _    (.Y.)|         \    // [|   ||        \     [||
+    \\  | |    /--______      ___\    / \ :          \  //  [:   ||.____.   |\    ||
+    \\| /   __-  - _/   -U-U-u-    | |   \ \          \//   /|   |      |   ;\    ||
+       |   -  -   /                | |     \ )              /|   |      \___/\    ||
+       |  |   -  |                 | )     | |              /|   |       | :      ||
+        | |    | |                 | |    | |               /|   |       : ---^[[[||
+        | |    < |                 | |   |_/                 \___/     *-|__---^[[||
+        < |    /__\                <  \                      .| |-*               ||
+        /__\                       /___\                    (__))                 ||
 */
-
-//
-// You need to implement the functions eval, builtin_cmd, do_bgfg,
-// waitfg, sigchld_handler, sigstp_handler, sigint_handler
-//
-// The code below provides the "prototypes" for those functions
-// so that earlier code can refer to them. You need to fill in the
-// function bodies below.
-//
 
 void eval(char *cmdline);
 int builtin_cmd(char **argv);
@@ -82,18 +81,18 @@ int main(int argc, char *argv[])
   //
   dup2(1, 2);
 
-  /* Parse the command line */
+  // Parse the command line
   char c;
   while ((c = getopt(argc, argv, "hvp")) != EOF) {
     switch (c) {
-    case 'h':             // print help message
+    case 'h':          // Print help message
       usage();
       break;
-    case 'v':             // emit additional diagnostic info
+    case 'v':          // Emit additional diagnostic info
       verbose = 1;
       break;
-    case 'p':             // don't print a prompt
-      emit_prompt = 0;  // handy for automatic testing
+    case 'p':          // Don't print a prompt
+      emit_prompt = 0; // Handy for automatic testing
       break;
     default:
       usage();
@@ -107,8 +106,8 @@ int main(int argc, char *argv[])
   //
   // These are the ones you will need to implement
   //
-  Signal(SIGINT,  sigint_handler);   // ctrl-c
-  Signal(SIGTSTP, sigtstp_handler);  // ctrl-z
+  Signal(SIGINT,  sigint_handler);   // Ctrl-c
+  Signal(SIGTSTP, sigtstp_handler);  // Ctrl-z
   Signal(SIGCHLD, sigchld_handler);  // Terminated or stopped child
 
   //
@@ -172,54 +171,59 @@ int main(int argc, char *argv[])
 /////////////////////////////////////////////////////////////////////////////
 void eval(char *cmdline) 
 {
-  /* Parse command line */
+  // Parse command line
   //
   // The 'argv' vector is filled in by the parseline
   // routine below. It provides the arguments needed
   // for the execve() routine, which you'll need to
   // use below to launch a process.
   //
+
   char *argv[MAXARGS];
   pid_t pid;
+
   //
   // The 'bg' variable is TRUE if the job should run
   // in background mode or FALSE if it should run in FG
   //
+  
   int bg = parseline(cmdline, argv); // True if bg job, false if fg job
-  if (argv[0] == NULL) { // If passed an empty line
-    return;   /* ignore empty lines */
+  if (argv[0] == NULL) {             // If passed an empty line
+    return;                          // ignore empty lines 
   }
   
   sigset_t mask;
-  sigemptyset(&mask); // Initialize empty signal set
-  sigaddset(&mask, SIGCHLD); // Add SIGCHLD signal to signal set
-  struct job_t *job; //create a job_t struct
+  sigemptyset(&mask);                // Initialize empty signal set
+  sigaddset(&mask, SIGCHLD);         // Add SIGCHLD signal to signal set
+  struct job_t *job;                 //create a job_t struct
   
   if (!builtin_cmd(argv)) {
-    sigprocmask(SIG_BLOCK, &mask, NULL); // Block SIGCHLD signals
+    sigprocmask(SIG_BLOCK, &mask, NULL);                   // Block SIGCHLD signals
 
-    if((pid = fork()) == 0){ // If in child
-      setpgid(0, 0); //Reset pig to 0,0
-      sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
-      execvp(argv[0], argv); // Execute child
-      exit(0); // Exit if error occurs within child execution
+    if((pid = fork()) == 0){                               // If in child
+      setpgid(0, 0);                                       //Reset pig to 0,0
+      sigprocmask(SIG_UNBLOCK, &mask, NULL);               // Unblock SIGCHLD signals
+      execvp(argv[0], argv);                               // Execute child
+      printf("%s: Command not found\n", argv[0]);          // Error statement for touch15/16 if command is not found
+      exit(0);                                             // Exit if error occurs within child execution
     }
 
-    addjob(jobs, pid, bg ? BG : FG, cmdline); // Parent adds job to jobs list
+    addjob(jobs, pid, bg ? BG : FG, cmdline);              // Parent adds job to jobs list
 
-    sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);                 // Unblock SIGCHLD signals
     
     if(!bg) {
-      waitfg(pid); // Wait for fg function to end
+      waitfg(pid);                                         // Wait for fg function to end
     }
     else{ 
-      job = getjobpid(jobs, pid); // Find struct of recently added background job
+      job = getjobpid(jobs, pid);                          // Find struct of recently added background job
       printf("[%d] (%d) %s", job->jid, job->pid, cmdline); // Print message
     }
   }
 
   return;
 }
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // builtin_cmd - If the user has typed a built-in command then execute
@@ -227,40 +231,46 @@ void eval(char *cmdline)
 // is a C string. We've cast this to a C++ string type to simplify
 // string comparisons; however, the do_bgfg routine will need 
 // to use the argv array as well to look for a job number.
-
+//
+/////////////////////////////////////////////////////////////////////////////
 int builtin_cmd(char **argv) 
 {
-  string cmd(argv[0]); //assign our input to a string
+  string cmd(argv[0]);                   // Reassign our input from char to string
 
-  if (cmd == "quit") { //quits program
+  if (cmd == "quit") {                   // Quits program
     exit(0);
   }
-  else if (cmd == "fg" || cmd == "bg") { //goes to foreground and background processes
+  else if (cmd == "fg" || cmd == "bg") { // Changes FG to BG processes and BG to FG processes
     do_bgfg(argv);
     return 1;
   }
-  else if (cmd == "jobs") { //
+  else if (cmd == "jobs") {              // Prints active jobs
     listjobs(jobs);
     return 1;
   }
-  return 0; // Not a built in command
+  return 0;                              // Not a built in command
 }
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // do_bgfg - Execute the builtin bg and fg commands
 //
+/////////////////////////////////////////////////////////////////////////////
 void do_bgfg(char **argv) 
 {
   struct job_t *jobp = NULL;
-    
-  /* Ignore command if no argument */
+
+  //  
+  // Ignore command if no argument
+  //
   if (argv[1] == NULL) {
     printf("%s command requires PID or %%jobid argument\n", argv[0]);
     return;
   }
     
-  /* Parse the required PID or %JID arg */
+  //
+  // Parse the required PID or %JID arg
+  //
   if (isdigit(argv[1][0])) {
     pid_t pid = atoi(argv[1]);
     if (!(jobp = getjobpid(jobs, pid))) {
@@ -289,16 +299,17 @@ void do_bgfg(char **argv)
   // so we've converted argv[0] to a string (cmd) for
   // your benefit.
   //
-  string cmd(argv[0]); //assign our input to a string
+  
+  string cmd(argv[0]);                                                 // Reassign our input from char to string
   if (cmd == "bg") {
-    jobp -> state = BG; // Set job state to BG
-    kill(-jobp -> pid, SIGCONT); // Have job pause and continue running in background
-    printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline); // Print message
+    jobp -> state = BG;                                                // Set job state to BG
+    kill(-jobp -> pid, SIGCONT);                                       // Have job pause and continue running in background
+    printf("[%d] (%d) %s", jobp -> jid, jobp -> pid, jobp -> cmdline); // Print message
   }
   else if (cmd == "fg") {
-    jobp -> state = FG; // Set job state to FG
-    kill(-jobp -> pid, SIGCONT); // Have job pause and continue running in foreground
-    waitfg(jobp -> pid); // Need to wait for fg job to finish because only 1 fg job can run at a time
+    jobp -> state = FG;                                                // Set job state to FG
+    kill(-jobp -> pid, SIGCONT);                                       // Have job pause and continue running in foreground
+    waitfg(jobp -> pid);                                               // Need to wait for fg job to finish because only 1 fg job can run at a time
   }
   return;
 }
@@ -307,20 +318,27 @@ void do_bgfg(char **argv)
 //
 // waitfg - Block until process pid is no longer the foreground process
 //
+/////////////////////////////////////////////////////////////////////////////
 void waitfg(pid_t pid)
 {
-  struct job_t *job; //create a job_t struct to hold pid of jobs
-  job = getjobpid(jobs, pid);
-  while(job -> state == FG){
-    sleep(.1);
+  struct job_t *job;          // Create a job_t struct to hold pid of jobs
+  job = getjobpid(jobs, pid); // Collect pid of job
+  while(job -> state == FG){  // Continue waiting until job is no longer in FG
+    sleep(.1);                // Function for causing the program to wait
   }
   return;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+//
 //
 // Signal handlers
 //
+//
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -331,25 +349,26 @@ void waitfg(pid_t pid)
 //     available zombie children, but doesn't wait for any other
 //     currently running children to terminate.  
 //
+/////////////////////////////////////////////////////////////////////////////
 void sigchld_handler(int sig) 
 {
   pid_t pid;
   int status;
 
   while((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0){
-    struct job_t *job; //create a job_t struct to hold pid of jobs
+    struct job_t *job;                                                                      // Create a job_t struct to hold pid of jobs
     job = getjobpid(jobs, pid);
     
-    if (WIFSTOPPED(status)) { // Will return true if child process is currently stopped
-      job -> state = ST; // Set job state to stopped
-      printf("Job [%d] (%d) stopped by signal %d\n", job -> jid, pid, WSTOPSIG(status));
+    if (WIFSTOPPED(status)) {                                                               // Will return true if child process is currently stopped
+      job -> state = ST;                                                                    // Set job state to stopped
+      printf("Job [%d] (%d) stopped by signal %d\n", job -> jid, pid, WSTOPSIG(status));    // Print statement for signal handlers
     }
     else if (WIFSIGNALED(status)) {
-      printf("Job [%d] (%d) terminated by signal %d\n", job -> jid, pid, WTERMSIG(status));
-      deletejob(jobs, pid);
+      printf("Job [%d] (%d) terminated by signal %d\n", job -> jid, pid, WTERMSIG(status)); // Print statement for signal handlers
+      deletejob(jobs, pid);                                                                 // Deletes the job pid
     }
     else if (WIFEXITED(status)) {
-      deletejob(jobs, pid);
+      deletejob(jobs, pid);                                                                 // Deletes the job pid
     }
 
   }
@@ -362,13 +381,14 @@ void sigchld_handler(int sig)
 //    user types ctrl-c at the keyboard. Catch it and send it along
 //    to the foreground job.  
 //
+/////////////////////////////////////////////////////////////////////////////
 void sigint_handler(int sig) 
 {
   pid_t pid = fgpid(jobs); // Collect pid of foreground job
-  if(pid <= 0){ // fgpid() returns 0 if no fg job, otherwise returns not 0
+  if(pid <= 0){            // fgpid() returns 0 if no fg job, otherwise returns not 0
     return; 
   }
-  kill(-pid, SIGINT); // Terminate group associated with pid
+  kill(-pid, SIGINT);      // Terminate group associated with pid
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -377,19 +397,22 @@ void sigint_handler(int sig)
 //     the user types ctrl-z at the keyboard. Catch it and suspend the
 //     foreground job by sending it a SIGTSTP.  
 //
+/////////////////////////////////////////////////////////////////////////////
 void sigtstp_handler(int sig) 
 {
   pid_t pid = fgpid(jobs); // Collect pid of foreground job
   if(pid <= 0){
-    return; // Stop group associated with pid
+    return;                // Stop group associated with pid
   }
-  kill(-pid, SIGTSTP); // Stop group associated with pid
+  kill(-pid, SIGTSTP);     // Stop group associated with pid
 }
 
-/*********************
- * End signal handlers
- *********************/
-
-
-
-
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+//
+//
+// End Signal Handlers
+//
+//
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
