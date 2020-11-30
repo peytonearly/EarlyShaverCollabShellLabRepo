@@ -1,11 +1,8 @@
  // 
 // tsh - A tiny shell program with job control
 // 
-// <Put your name and login ID here>
-// Peyton Early
-// Nathan Shaver - 109410328
-
-// Should read chapter 8 to figure out what the fuck is going on
+// Peyton Early   -  109483999
+// Nathan Shaver  -  109410328
 
 using namespace std;
 
@@ -30,7 +27,29 @@ using namespace std;
 
 static char prompt[] = "tsh> ";
 int verbose = 0;
-int howdy;
+
+/*
+      .~~~~`\~~\
+     ;       ~~ \
+     |           ;
+ ,--------,______|---.
+/          \-----`    \    
+`.__________`-_______-'
+        ('o_o')  __Howdy
+        _\~-~/_    ______.
+       //\__/\ \ ~(_]---'
+      / )O  O( .\/_)
+      \ \    / \_/
+      )/_|  |_\
+     // /(\/)\ \
+     /_/      \_\
+    (_||      ||_)
+      \| |__| |/
+       | |  | |
+       | |  | |
+       |_|  |_|
+       /_\  /_\
+*/
 
 //
 // You need to implement the functions eval, builtin_cmd, do_bgfg,
@@ -135,7 +154,7 @@ int main(int argc, char *argv[])
     fflush(stdout);
   } 
 
-  exit(0); //control never reaches here
+  exit(0); // Control never reaches here
 }
   
 /////////////////////////////////////////////////////////////////////////////
@@ -150,6 +169,7 @@ int main(int argc, char *argv[])
 // background children don't receive SIGINT (SIGTSTP) from the kernel
 // when we type ctrl-c (ctrl-z) at the keyboard.
 //
+/////////////////////////////////////////////////////////////////////////////
 void eval(char *cmdline) 
 {
   /* Parse command line */
@@ -273,6 +293,7 @@ void do_bgfg(char **argv)
   if (cmd == "bg") {
     jobp -> state = BG; // Set job state to BG
     kill(-jobp -> pid, SIGCONT); // Have job pause and continue running in background
+    printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline); // Print message
   }
   else if (cmd == "fg") {
     jobp -> state = FG; // Set job state to FG
