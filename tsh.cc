@@ -1,9 +1,9 @@
-// 
+ // 
 // tsh - A tiny shell program with job control
 // 
 // <Put your name and login ID here>
 // Peyton Early
-// Nathan Shaver
+// Nathan Shaver - 109410328
 
 // Should read chapter 8 to figure out what the fuck is going on
 
@@ -30,6 +30,7 @@ using namespace std;
 
 static char prompt[] = "tsh> ";
 int verbose = 0;
+int howdy;
 
 //
 // You need to implement the functions eval, builtin_cmd, do_bgfg,
@@ -172,13 +173,13 @@ void eval(char *cmdline)
   sigset_t mask;
   sigemptyset(&mask); // Initialize empty signal set
   sigaddset(&mask, SIGCHLD); // Add SIGCHLD signal to signal set
-  struct job_t *job;
+  struct job_t *job; //create a job_t struct
   
   if (!builtin_cmd(argv)) {
     sigprocmask(SIG_BLOCK, &mask, NULL); // Block SIGCHLD signals
 
     if((pid = fork()) == 0){ // If in child
-      setpgid(0, 0); // Set process group ID 
+      setpgid(0, 0); //Reset pig to 0,0
       sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD signals
       execvp(argv[0], argv); // Execute child
       exit(0); // Exit if error occurs within child execution
@@ -209,16 +210,16 @@ void eval(char *cmdline)
 
 int builtin_cmd(char **argv) 
 {
-  string cmd(argv[0]);
+  string cmd(argv[0]); //assign our input to a string
 
-  if (cmd == "quit") {
+  if (cmd == "quit") { //quits program
     exit(0);
   }
-  else if (cmd == "fg" || cmd == "bg") {
+  else if (cmd == "fg" || cmd == "bg") { //goes to foreground and background processes
     do_bgfg(argv);
     return 1;
   }
-  else if (cmd == "jobs") {
+  else if (cmd == "jobs") { //
     listjobs(jobs);
     return 1;
   }
@@ -231,7 +232,7 @@ int builtin_cmd(char **argv)
 //
 void do_bgfg(char **argv) 
 {
-  struct job_t *jobp=NULL;
+  struct job_t *jobp = NULL;
     
   /* Ignore command if no argument */
   if (argv[1] == NULL) {
@@ -268,16 +269,15 @@ void do_bgfg(char **argv)
   // so we've converted argv[0] to a string (cmd) for
   // your benefit.
   //
-  string cmd(argv[0]);
+  string cmd(argv[0]); //assign our input to a string
   if (cmd == "bg") {
-    jobp->state = BG; // Set job state to BG
-    kill(-jobp->pid, SIGCONT); // Have job pause and continue running in background
-    printf("[%d] (%d) %s", jobp->jid, jobp->pid, jobp->cmdline); // Print message
+    jobp -> state = BG; // Set job state to BG
+    kill(-jobp -> pid, SIGCONT); // Have job pause and continue running in background
   }
   else if (cmd == "fg") {
-    jobp->state = FG; // Set job state to FG
-    kill(-jobp->pid, SIGCONT); // Have job pause and continue running in foreground
-    waitfg(jobp->pid); // Need to wait for fg job to finish because only 1 fg job can run at a time
+    jobp -> state = FG; // Set job state to FG
+    kill(-jobp -> pid, SIGCONT); // Have job pause and continue running in foreground
+    waitfg(jobp -> pid); // Need to wait for fg job to finish because only 1 fg job can run at a time
   }
   return;
 }
@@ -288,7 +288,8 @@ void do_bgfg(char **argv)
 //
 void waitfg(pid_t pid)
 {
-  struct job_t *job = getjobpid(jobs, pid);
+  struct job_t *job; //create a job_t struct to hold pid of jobs
+  job = getjobpid(jobs, pid);
   while(job -> state == FG){
     sleep(.1);
   }
@@ -314,15 +315,16 @@ void sigchld_handler(int sig)
   pid_t pid;
   int status;
 
-  while((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0){
-    struct job_t *job = getjobpid(jobs, pid);
+  while((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0){
+    struct job_t *job; //create a job_t struct to hold pid of jobs
+    job = getjobpid(jobs, pid);
     
     if (WIFSTOPPED(status)) { // Will return true if child process is currently stopped
-      job->state = ST; // Set job state to stopped
-      printf("Job [%d] (%d) stopped by signal %d\n", job->jid, pid, WSTOPSIG(status));
+      job -> state = ST; // Set job state to stopped
+      printf("Job [%d] (%d) stopped by signal %d\n", job -> jid, pid, WSTOPSIG(status));
     }
     else if (WIFSIGNALED(status)) {
-      printf("Job [%d] (%d) terminated by signal %d\n", job->jid, pid, WTERMSIG(status));
+      printf("Job [%d] (%d) terminated by signal %d\n", job -> jid, pid, WTERMSIG(status));
       deletejob(jobs, pid);
     }
     else if (WIFEXITED(status)) {
@@ -342,10 +344,10 @@ void sigchld_handler(int sig)
 void sigint_handler(int sig) 
 {
   pid_t pid = fgpid(jobs); // Collect pid of foreground job
-  if (pid > 0) { // fgpid() returns 0 if no fg job, otherwise returns not 0
-    kill(-pid, SIGINT); // Terminate group associated with pid
+  if(pid <= 0){ // fgpid() returns 0 if no fg job, otherwise returns not 0
+    return; 
   }
-  return;
+  kill(-pid, SIGINT); // Terminate group associated with pid
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -357,10 +359,10 @@ void sigint_handler(int sig)
 void sigtstp_handler(int sig) 
 {
   pid_t pid = fgpid(jobs); // Collect pid of foreground job
-  if (pid > 0) {
-    kill(-pid, SIGTSTP); // Stop group associated with pid
+  if(pid <= 0){
+    return; // Stop group associated with pid
   }
-  return;
+  kill(-pid, SIGTSTP); // Stop group associated with pid
 }
 
 /*********************
