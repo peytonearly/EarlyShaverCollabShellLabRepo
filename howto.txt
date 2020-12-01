@@ -1,12 +1,16 @@
 A general how to file for every trace
 
-Trace01-
+Trace01- Done for us
 
-Trace02-
+Trace02- Done using an exit(0) for whent the builtin command = "quit"
 
-Trace03-
+Trace03- First added an if statement for the builtin command to determine if foreground or background job. Is
+then taken to the do_bgfg function. Using a linked list, the job state is set to a foreground job and has
+job pause and continue running in foreground
 
-Trace04-
+Trace04- Used previous if statement for the builtin command to determine if foreground or background job. Is
+then taken to the do_bgfg function. Using a linked list, the job state is set to a background job and has
+job pause and continue running in background. An message is then printed to match the trace.
 
 Trace05-
 
@@ -26,8 +30,8 @@ Trace12-
 
 Trace13-
 
-Trace14-
+Trace14- Added a command not found message for error handling after the execution in the fork
 
-Trace15-
+Trace15- Added a command not found message for error handling after the execution in the fork
 
 Trace16-
