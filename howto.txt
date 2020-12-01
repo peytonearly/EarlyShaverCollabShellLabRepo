@@ -1,6 +1,6 @@
 A general how to file for every trace
 
-Trace01- Done for us
+Trace01- Done for us - just needed to enable ability to terminate with EOF condition.
 
 Trace02- Done using an exit(0) for whent the builtin command = "quit"
 
