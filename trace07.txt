@@ -12,3 +12,4 @@ INT
 
 /bin/echo tsh> jobs
 jobs
+I

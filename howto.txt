@@ -1,37 +1,81 @@
 A general how to file for every trace
 
-Trace01- Done for us - just needed to enable ability to terminate with EOF condition.
+Trace01:
+Done for us - just needed to enable ability to terminate with EOF condition.
 
-Trace02- Done using an exit(0) for whent the builtin command = "quit"
+Trace02:
+Done using an exit(0) for when the function is given the builtin "quit" command (line 244).
 
-Trace03- First added an if statement for the builtin command to determine if foreground or background job. Is
-then taken to the do_bgfg function. Using a linked list, the job state is set to a foreground job and has
-job pause and continue running in foreground
+Trace03:
+First perform a check to see if input tells program to make a foreground job. If yes, create a child fork
+that executes given command. Parent fork will add command as a FG job. Then need to call waitfg() function 
+because only one function may run in the foreground at a time.
 
-Trace04- Used previous if statement for the builtin command to determine if foreground or background job. Is
-then taken to the do_bgfg function. Using a linked list, the job state is set to a background job and has
-job pause and continue running in background. An message is then printed to match the trace.
+Trace04:
+Perform check to see if input tells program to make background job. If yes, create child fork that executes
+given command. Parent fork will add command as a background job and print a message that gives the details of
+the background job
 
-Trace05-
+Trace05:
+Employed use of listjobs() function given in job.cc file to print currently running jobs. (line 250)
 
-Trace06-
+Trace06:
+If function recieves SIGINT signal, it will call sigint_handler. This function searches for jobs running in 
+foreground, and if there are any foreground jobs then it kills the job. (Line 390)
 
-Trace07-
+Trace07: 
+sigint_handler only checks for foreground jobs by collecting the pid of that job. (Line 390)
 
-Trace08-
+Trace08:
+Operates similar ot sigint_handler() function, but instead of sending a kill signal to the foreground job,
+the function sends a stop function to halt the progress of the job.
 
-Trace09-
+Trace09:
+First added an if statement for the builtin command to determine if foreground or background job (line 246). 
+Is then taken to the do_bgfg function. The job struct state parameter is set to a foreground job (line 313) and has
+job pause and continue running in foreground (line 314). Program then calls waitfg function (line 315) because
+only one foreground process can be running at a time. 
 
-Trace10-
+Trace10:
+Used previous if statement for the builtin command to determine if foreground or background job (line 246). Is
+then taken to the do_bgfg function. The job struct state parameter is set to a background job (line 308) and has
+job pause and continue running in background. A message is then printed to display the command (line 310).
 
-Trace11-
+Trace11:
+In the sigint_handler function, a kill command is issued to -pid, meaning the group id is forwarded the SIGINT (line 394)
 
-Trace12-
+Trace12:
+In the sigint_handler function, a kill command is issued to -pid, meaning the group id is forwarded the SIGINT (line 394)
 
-Trace13-
+Trace13:
+In do_bgfg() function, when calling SIGCONT on program, when passing -pid instead of pid, will act on all
+processes in pgid associated with pid (line 309/314).
 
-Trace14- Added a command not found message for error handling after the execution in the fork
+Trace14: 
+Checked for error when forking child, and if error occurred printed an error message and exited execution. (Line 210)
 
-Trace15- Added a command not found message for error handling after the execution in the fork
+Trace15: 
+Checked for error when forking child, and if error occurred printed an error message and exited execution. (Line 210)
 
-Trace16-
+Trace16:
+There are no checks to see where signals are coming from, only checks to see if they exist at all. 
+
+sigchld_handler():
+Used to reap children who have completed or been sent a SIGINT or SIGTSTP signal. Continuously checks children
+to see if any have stopped running. If they have, will check the status of the child and act accordingly. If
+sent SIGTSTP, sets child state to ST. If sent SIGINT, child process is deleted and prints kill message. 
+If sent exited status, child process is deleted.
+
+sigprocmask():
+Used for masking signals. In this case, signal mask was set to SIGCHLD to prevent child from being reaped before
+child could get added to job list (race condition). Mask was set using sigaddset(). SIGCHLD signals were blocked
+before fork. Within child fork, pgid was set, then SIGCHLD is unblocked and command is executed. Within parent
+fork, SIGCHLD is unblocked AFTER being added as a job.
+
+setpgid(0, 0):
+Sets process group id for child fork. Pgid = parent Pid. 
+Child PGID == Parent PID
+
+execvp():
+Provides an array of pointers to the represented argument that was just executed. The strings are later terminated
+because they are NULL ending strings.
